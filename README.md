@@ -1,10 +1,10 @@
 # assignment
 
-mvn clean install
-mvn tomcat7:run 
+#mvn clean install
+#mvn tomcat7:run 
 
-userName:mudassir
-password:pass@123
+#userName:mudassir
+#password:pass@123
 
 #################################################################################################################################
 
