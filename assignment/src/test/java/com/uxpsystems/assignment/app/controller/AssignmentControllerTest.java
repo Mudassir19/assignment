@@ -1,140 +1,79 @@
 package com.uxpsystems.assignment.app.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-
-
-import java.util.ArrayList;
-
-import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uxpsystems.assignment.app.model.AssignmentEntities;
 import com.uxpsystems.assignment.app.service.AssignmentService;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
-public class AssignmentControllerTest {
+/**
+ * @author Mudassir
+ *
+ */
+@RestController
+@RequestMapping(value = "/assignement/records")
+public class AssignmentController {
 
-	
 	@Autowired
-	private MockMvc mockMvc;
-
-	@MockBean
 	private AssignmentService assignmentService;
 
-	@Test
-	public void testCreateRecord() throws Exception {
 
-		AssignmentEntities mockRecord = new AssignmentEntities();
 
-		mockRecord.setId(1L);
-		mockRecord.setUserName("john");
-		mockRecord.setStatus("Activated");
-		mockRecord.setPassword("john@123");
-
-		String inputInJson = this.mapToJson(mockRecord);
-
-		String URI = "/assignement/records/create";
-
-		Mockito.when(assignmentService.createRecords(Mockito.any(AssignmentEntities.class))).thenReturn(mockRecord);
-
-		RequestBuilder requestBuilder = MockMvcRequestBuilders.post(URI).accept(MediaType.APPLICATION_JSON)
-				.content(inputInJson).contentType(MediaType.APPLICATION_JSON);
-	
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		String outputInJson = response.getContentAsString();
-		assertThat(outputInJson).isEqualTo(inputInJson);
-		assertEquals(HttpStatus.OK.value(), response.getStatus());
-
-	}
-	
-	
-	 @Test 
-	 public void testGetRecordById() throws Exception { 
-	 AssignmentEntities mockRecord = new AssignmentEntities();
-		 
-		  mockRecord.setId(1L); 
-		  mockRecord.setUserName("john");
-		  mockRecord.setStatus("Activated"); 
-		  mockRecord.setPassword("john@123");
-		  Mockito.when(assignmentService.getRecordById(Mockito.anyLong())).thenReturn(Optional.of(mockRecord));
-		  
-		  String URI = "/assignement/records/get/1";
-		  
-		  RequestBuilder requestBuilder = MockMvcRequestBuilders.get(URI).accept(MediaType.APPLICATION_JSON);
-		  
-		  MvcResult result = mockMvc.perform(requestBuilder).andReturn(); 
-		  
-		  String expectedJson = this.mapToJson(mockRecord); 
-		  String outputInJson =result.getResponse().getContentAsString();
-		  assertThat(outputInJson).isEqualTo(expectedJson); 
-		  }
-	 
-		@Test
-		public void testAllRecords() throws Exception {
-
-			AssignmentEntities record = new AssignmentEntities();
-
-			record.setId(1001L);
-			record.setUserName("john");
-			record.setStatus("Activated");
-			record.setPassword("john@123");
-
-			AssignmentEntities record2 = new AssignmentEntities();
-
-			record2.setId(1002L);
-			record2.setUserName("Mike");
-			record2.setStatus("Deactivated");
-			record2.setPassword("mike@123");
-			
-			List<AssignmentEntities> recordList = new ArrayList<>();
-			recordList.add(record);
-			recordList.add(record2);
-			
-			Mockito.when(assignmentService.getAllRecords()).thenReturn(recordList);
-			
-			String URI = "/assignement/records/allrecords";
-			RequestBuilder requestBuilder = MockMvcRequestBuilders.get(
-					URI).accept(
-					MediaType.APPLICATION_JSON);
-
-			MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-
-			String expectedJson = this.mapToJson(recordList);
-			String outputInJson = result.getResponse().getContentAsString();
-			assertThat(outputInJson).isEqualTo(expectedJson);
-		}
-
-	
 	/**
-	  Maps an Object into a JSON String. Uses a Jackson ObjectMapper.
-	*/
-	private String mapToJson(Object object) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.writeValueAsString(object);
+	 * @param entities
+	 * @return
+	 */
+	@PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public AssignmentEntities createRecords(@RequestBody AssignmentEntities entities) {
+		return assignmentService.createRecords(entities);
 	}
 
-	
-	
+	/**
+	 * @param id
+	 * @return
+	 */
+	@GetMapping(value = "/get/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Optional<AssignmentEntities> getRecordById(@PathVariable("id") Long id) {
+		return assignmentService.getRecordById(id);
+	}
+
+	/**
+	 * @return
+	 */
+	@GetMapping(value = "/allrecords",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Iterable<AssignmentEntities> getAllRecords() {
+		return assignmentService.getAllRecords();
+	}
+
+	/**
+	 * @param id
+	 */
+	@DeleteMapping(value = "delete/{id}")
+	public void deleteRecord(@PathVariable("id") Long id) {
+		assignmentService.deleteRecord(id);
+	}
+
+	/**
+	 * @param id
+	 * @param newStatus
+	 * @return
+	 */
+	@PutMapping(value = "update/{id}/{newStatus}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public AssignmentEntities updateRecord(@PathVariable("id") Long id,
+			@PathVariable("newStatus") String newStatus) {
+
+		return assignmentService.updateRecord(id, newStatus);
+	}
+
 }
+
